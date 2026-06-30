@@ -2,14 +2,21 @@ import fitz  # PyMuPDF
 import spacy
 import re
 
-# Load spaCy model (ensure you run: python -m spacy download en_core_web_sm)
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    print("Downloading en_core_web_sm model...")
-    from spacy.cli import download
-    download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+_NLP = None
+
+
+def get_nlp():
+    global _NLP
+    if _NLP is not None:
+        return _NLP
+
+    try:
+        _NLP = spacy.load("en_core_web_sm")
+    except OSError:
+        # Fall back to a blank pipeline so the service starts even if the
+        # spaCy model has not been downloaded yet.
+        _NLP = spacy.blank("en")
+    return _NLP
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     """Extracts raw text from PDF bytes."""
@@ -21,7 +28,7 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 
 def extract_entities(text: str) -> dict:
     """Uses spaCy and regex to extract basic info and skills."""
-    doc = nlp(text)
+    doc = get_nlp()(text)
     
     # 1. Regex for email and phone
     email_regex = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"

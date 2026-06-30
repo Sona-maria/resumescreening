@@ -29,6 +29,8 @@ router.post('/request-otp', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
+    const isDev = process.env.NODE_ENV !== 'production';
+
     try {
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes
@@ -53,9 +55,17 @@ router.post('/request-otp', async (req, res) => {
             console.log('🔑 YOUR OTP CODE IS:', otp);
             console.log('🔗 Ethereal Preview URL:', nodemailer.getTestMessageUrl(info));
             console.log('=============================================\n');
+
+            return res.json({
+                message: 'OTP sent successfully (Check console for Ethereal URL)',
+                ...(isDev ? { otp, previewUrl: nodemailer.getTestMessageUrl(info) } : {})
+            });
         }
 
-        res.json({ message: 'OTP sent successfully (Check console for Ethereal URL)' });
+        res.json({
+            message: 'OTP sent successfully (mail transport not initialized)',
+            ...(isDev ? { otp } : {})
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });

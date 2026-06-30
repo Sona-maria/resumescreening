@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import Login from './pages/Login';
+import ResendOtp from './pages/ResendOtp';
 import JobUpload from './pages/JobUpload';
 import CandidateRanking from './pages/CandidateRanking';
 import Navbar from './components/Navbar';
@@ -25,6 +26,7 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/resend-otp" element={<ResendOtp />} />
           <Route path="/" element={
             <ProtectedRoute>
               <JobUpload />

@@ -1,16 +1,28 @@
+from functools import lru_cache
 from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
-print("Loading SentenceTransformer model...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
-print("Model loaded.")
+
+@lru_cache(maxsize=1)
+def get_model():
+    try:
+        return SentenceTransformer('all-MiniLM-L6-v2')
+    except Exception:
+        return None
 
 def compute_similarity(jd_text: str, resume_text: str) -> float:
     """Computes cosine similarity between Job Description and Resume Text."""
-    embeddings = model.encode([jd_text, resume_text])
-    sim = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
-    # Ensure it's between 0 and 1
+    model = get_model()
+    if model is not None:
+        embeddings = model.encode([jd_text, resume_text])
+        sim = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+        return max(0.0, min(1.0, float(sim)))
+
+    vectorizer = TfidfVectorizer(stop_words='english')
+    vectors = vectorizer.fit_transform([jd_text, resume_text])
+    sim = cosine_similarity(vectors[0], vectors[1])[0][0]
     return max(0.0, min(1.0, float(sim)))
 
 def calculate_match_score(jd_text: str, resume_text: str, jd_skills: list, resume_skills: list) -> dict:

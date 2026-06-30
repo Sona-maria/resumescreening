@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, KeyRound, Loader2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 const Login = () => {
@@ -14,6 +14,13 @@ const Login = () => {
     
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    React.useEffect(() => {
+        if (location.state?.email) {
+            setEmail(location.state.email);
+        }
+    }, [location.state]);
 
     const requestOtp = async (e) => {
         e.preventDefault();
@@ -91,13 +98,22 @@ const Login = () => {
                                 />
                             </div>
                         </div>
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-brand-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-                        >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue with Email'}
-                        </button>
+                        <div className="space-y-3">
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-brand-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                            >
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue with Email'}
+                            </button>
+                            <Link
+                                to="/resend-otp"
+                                state={{ email }}
+                                className="block text-center text-sm text-slate-400 hover:text-brand-300 transition-colors"
+                            >
+                                Didn’t get it? Resend OTP
+                            </Link>
+                        </div>
                     </form>
                 ) : (
                     <form onSubmit={verifyOtp} className="space-y-6 animate-fade-in">
@@ -117,15 +133,24 @@ const Login = () => {
                                 />
                             </div>
                         </div>
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 py-3.5 rounded-xl font-bold shadow-lg transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-                        >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin text-slate-900" /> : (
-                                <>Authenticate <ArrowRight className="w-5 h-5" /></>
-                            )}
-                        </button>
+                        <div className="space-y-3">
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 py-3.5 rounded-xl font-bold shadow-lg transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                            >
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin text-slate-900" /> : (
+                                    <>Authenticate <ArrowRight className="w-5 h-5" /></>
+                                )}
+                            </button>
+                            <Link
+                                to="/resend-otp"
+                                state={{ email }}
+                                className="block text-center text-sm text-slate-400 hover:text-brand-300 transition-colors"
+                            >
+                                Resend OTP
+                            </Link>
+                        </div>
                     </form>
                 )}
             </div>
