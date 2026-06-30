@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  is_verified    Boolean   @default(false)
+  otp_code       String?
+  otp_expires_at DateTime?
+  created_at     DateTime  @default(now())
+}
+
+model Job {
+  id              Int       @id @default(autoincrement())
+  title           String
+  role_type       String
+  location        String?
+  min_experience  Float?
+  max_experience  Float?
+  required_skills String    // Comma-separated
+  description     String
+  created_at      DateTime  @default(now())
+  resumes         Resume[]
+  scores          Score[]
+  notes           RecruiterNote[]
+}
+
+model Candidate {
+  id                     Int       @id @default(autoincrement())
+  name                   String?
+  email                  String    @unique
+  phone                  String?
+  total_experience_years Float?
+  created_at             DateTime  @default(now())
+  resumes                Resume[]
+}
+
+model Resume {
+  id             Int       @id @default(autoincrement())
+  candidate_id   Int
+  job_id         Int
+  file_path      String
+  parsed_text    String?
+  created_at     DateTime  @default(now())
+  status         String    @default("Pending") // Pending, Parsing, Parsed, Error
+
+  candidate      Candidate @relation(fields: [candidate_id], references: [id])
+  job            Job       @relation(fields: [job_id], references: [id])
+  skills         Skill[]
+  score          Score?
+  notes          RecruiterNote[]
+}
+
+model Skill {
+  id             Int       @id @default(autoincrement())
+  resume_id      Int
+  skill_name     String
+  source         String?
+
+  resume         Resume    @relation(fields: [resume_id], references: [id])
+}
+
+model Score {
+  id               Int       @id @default(autoincrement())
+  resume_id        Int       @unique
+  job_id           Int
+  match_score      Float
+  confidence_level String    // High, Medium, Low
+  explanation_text String?
+
+  resume           Resume    @relation(fields: [resume_id], references: [id])
+  job              Job       @relation(fields: [job_id], references: [id])
+}
+
+model RecruiterNote {
+  id             Int       @id @default(autoincrement())
+  resume_id      Int
+  job_id         Int
+  note_text      String?
+  status_tag     String    @default("Pool") // Shortlisted, Pool, Rejected
+  updated_at     DateTime  @updatedAt
+
+  resume         Resume    @relation(fields: [resume_id], references: [id])
+  job            Job       @relation(fields: [job_id], references: [id])
+}
